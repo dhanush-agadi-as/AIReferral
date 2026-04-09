@@ -1,0 +1,26 @@
+{
+  "name": "referralai-complete",
+  "version": "1.0.0",
+  "description": "ReferralAI - Decentralized AI-Powered Hiring Ecosystem",
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "dev:detached": "docker-compose up -d --build",
+    "down": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "logs:backend": "docker-compose logs -f backend",
+    "logs:frontend": "docker-compose logs -f frontend",
+    "logs:ai": "docker-compose logs -f ai-engine",
+    "prod": "docker-compose -f docker-compose.prod.yml up -d",
+    "test": "npm --prefix backend run test && npm --prefix frontend run test",
+    "lint": "npm --prefix backend run lint"
+  },
+  "keywords": [
+    "hiring",
+    "ai",
+    "referral",
+    "recruitment",
+    "blockchain"
+  ],
+  "author": "ReferralAI Team",
+  "license": "MIT"
+}

@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: referralai_mongo_prod
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_prod_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    restart: always
+    networks:
+      - referralai_prod_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: referralai_backend_prod
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/referralai?authSource=admin
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+      AI_ENGINE_URL: http://ai-engine:8000
+    restart: always
+    networks:
+      - referralai_prod_network
+    command: npm start
+
+  ai-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile
+    container_name: referralai_ai_engine_prod
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONUNBUFFERED: 1
+    restart: always
+    networks:
+      - referralai_prod_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - NEXT_PUBLIC_API_URL=${FRONTEND_API_URL}
+        - NEXT_PUBLIC_SOCKET_URL=${FRONTEND_SOCKET_URL}
+    container_name: referralai_frontend_prod
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+    restart: always
+    networks:
+      - referralai_prod_network
+
+volumes:
+  mongo_prod_data:
+
+networks:
+  referralai_prod_network:
+    driver: bridge
